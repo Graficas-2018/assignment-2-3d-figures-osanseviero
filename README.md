@@ -15,10 +15,10 @@ Rubric:
 5. The figures were transformed correctly.
 
 <img src="Images/Pyramid.png" width="300">
-<br/>Figure 1: 3D Pyramid.
+<br/>Figure 1: 3D Pyramid.<br/>
 
 <img src="Images/scutoid.png" width="500">
-<br/>Figure 2: 3D Scutoid.
+<br/>Figure 2: 3D Scutoid.<br/>
 
 <img src="Images/Octahedron.jpg" width="300">
 <br/>Figure 3: 3D Octahedron.
