@@ -199,14 +199,14 @@ function createScutoid(gl, translation, rotationAxis) {
 
 function createOctahedron(gl, translation, rotationAxis) {
     // Square vertices
-    const v1 = [0, 0, 0];
-    const v2 = [0, 0.0, 1.5];
-    const v3 = [1.5, 0.0, 1.5];
-    const v4 = [1.5, 0, 0.0];
+    const v1 = [-0.75, 0, -0.75];
+    const v2 = [-0.75, 0.0, 0.75];
+    const v3 = [0.75, 0.0, 0.75];
+    const v4 = [0.75, 0, -0.75];
 
     // Other vertices
-    const v5 = [0.75, 1,  0.75];
-    const v6 = [0.75, -1,  0.75];
+    const v5 = [0.0, 1,  0.0];
+    const v6 = [0.0, -1,  0.0];
 
     const verts = [
        ...v1, ...v2, ...v5,
@@ -253,7 +253,7 @@ function createOctahedron(gl, translation, rotationAxis) {
         if(this.modelViewMatrix[13] < -2.5) {
             goDown = false;
         }
-
+        
         if(goDown) {
             mat4.translate(this.modelViewMatrix, this.modelViewMatrix, [0, -0.05, 0]);
         } else {
