@@ -70,46 +70,51 @@ function initGL(canvas)
     mat4.translate(projectionMatrix, projectionMatrix, [0, 0, -5]);
 }
 
-const faceColors = [
-    [1.0, 0.0, 0.0, 1.0], 
-    [0.0, 1.0, 0.0, 1.0], 
-    [0.0, 0.0, 1.0, 1.0],
-    [1.0, 1.0, 0.0, 1.0], 
-    [1.0, 0.0, 1.0, 1.0], 
-    [0.0, 1.0, 1.0, 1.0],
-    [0.5, 0.5, 0.1, 1.0],
-    [0.7, 0.3, 0.7, 1.0]
-];
-
 function createPyramid(gl, translation, rotationAxis) {
     // Vertex Data
-    let vertexBuffer = gl.createBuffer();
+    var vertexBuffer;
+    vertexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
 
-    let verts = [
-        // Base
-        0.0, -.5, -.5,
-        -.5, -.5, -0.2,
-        -.3, -.5, 0.5,
-        -.3, -.5, 0.5,
-        0.5, -.5, -0.2,
+    top_v = [0.0, 1.0, 0.0]
+    pent_v1 = [0.0, -.5, -.5]
+    pent_v2 = [-.5, -.5, -0.2]
+    pent_v3 = [-.3, -.5, 0.5]
+    pent_v4 = [-.3, -.5, 0.5]
+    pent_v5 = [0.5, -.5, -0.2]
 
-        // Top
-        0.0, 1.0, 0.0
+    var verts = [
+       // Base
+       ...pent_v1, ...pent_v2, ...pent_v3, ...pent_v4, ...pent_v5,
+
+       // Triangle faces
+       ...pent_v1, ...pent_v2, ...top_v,
+       ...pent_v2, ...pent_v3, ...top_v,
+       ...pent_v3, ...pent_v4, ...top_v,
+       ...pent_v4, ...pent_v5, ...top_v,
+       ...pent_v5, ...pent_v1, ...top_v,
     ];
 
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);
 
     // Color data
-    let colorBuffer = gl.createBuffer();
+    var colorBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    var faceColors = [
+        [1.0, 0.0, 0.0, 1.0], 
+        [0.0, 1.0, 0.0, 1.0], 
+        [0.0, 0.0, 1.0, 1.0],
+        [1.0, 1.0, 0.0, 1.0], 
+        [1.0, 0.0, 1.0, 1.0], 
+        [0.0, 1.0, 1.0, 1.0] 
+    ];
 
-    let colorIndices = [0, 0, 0, 1, 2, 3, 4, 5]
-    let vertexColors = [];
+    var vertexColors = [];
+    faceLengths = [5, 3, 3, 3, 3, 3]
 
-    for (const idx of colorIndices) {
-        let color = faceColors[colorIndices[idx]]
-        for (var j=0; j < 3; j++) {    
+    for (var i in faceColors) {
+        var color = faceColors[i];
+        for (var j=0; j < faceLengths[i]; j++) {    
             vertexColors = vertexColors.concat(color);
         }
     }
@@ -121,11 +126,11 @@ function createPyramid(gl, translation, rotationAxis) {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pyramidIndexBuffer);
     var pyramidIndices = [
         0, 1, 2,  0, 2, 3,  0, 3, 4,
-        0, 1, 5,
-        1, 2, 5,
-        2, 3, 5,
-        3, 4, 5,
-        4, 0, 5
+        5, 6, 7,
+        8, 9, 10,
+        11, 12, 13,
+        14, 15, 16,
+        17, 18, 19
     ];
 
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(pyramidIndices), gl.STATIC_DRAW);
@@ -201,7 +206,16 @@ function createScutoid(gl, translation, rotationAxis) {
     // Color data
     var colorBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-    
+    var faceColors = [
+        [1.0, 0.0, 0.0, 1.0], 
+        [0.0, 1.0, 0.0, 1.0], 
+        [0.0, 0.0, 1.0, 1.0],
+        [1.0, 1.0, 0.0, 1.0], 
+        [1.0, 0.0, 1.0, 1.0], 
+        [0.0, 1.0, 1.0, 1.0],
+        [0.5, 0.5, 0.1, 1.0],
+        [0.7, 0.3, 0.7, 1.0]
+    ];
 
     var vertexColors = [];
     faceLengths = [6, 5, 4, 4, 4, 5, 5, 3]
@@ -285,6 +299,16 @@ function createOctahedron(gl, translation, rotationAxis) {
     // Color data
     var colorBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    var faceColors = [
+        [1.0, 0.0, 0.0, 1.0], 
+        [0.0, 1.0, 0.0, 1.0], 
+        [0.0, 0.0, 1.0, 1.0],
+        [1.0, 1.0, 0.0, 1.0], 
+        [1.0, 0.0, 1.0, 1.0], 
+        [0.0, 1.0, 1.0, 1.0],
+        [0.5, 0.5, 0.1, 1.0],
+        [0.7, 0.3, 0.7, 1.0]
+    ];
 
     var vertexColors = [];
 
@@ -330,6 +354,7 @@ function createOctahedron(gl, translation, rotationAxis) {
         var angle = Math.PI * 2 * fract;
 
         mat4.rotate(this.modelViewMatrix, this.modelViewMatrix, angle, rotationAxis);
+
         // Move up or down
         if(this.modelViewMatrix[13] > 3) {
             goDown = true;
