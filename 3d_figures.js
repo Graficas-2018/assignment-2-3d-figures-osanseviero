@@ -250,7 +250,7 @@ function createOctahedron(gl, translation, rotationAxis) {
         if(this.modelViewMatrix[13] > 2) {
             goDown = true;
         }
-        if(this.modelViewMatrix[13] < -2.5) {
+        if(this.modelViewMatrix[13] < -2) {
             goDown = false;
         }
         
