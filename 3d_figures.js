@@ -1,6 +1,6 @@
 var projectionMatrix;
 
-var shaderProgram, shaderVertexPositionAttribute, shaderVertexColorAttribute, 
+var shaderProgram, shaderVertexPositionAttribute, shaderVertexColorAttribute,
     shaderProjectionMatrixUniform, shaderModelViewMatrixUniform;
 
 var duration = 5000; // ms
@@ -54,7 +54,7 @@ function initWebGL(canvas)
         throw new Error(msg);
     }
 
-    return gl;        
+    return gl;    
  }
 
 function initViewport(gl, canvas)
@@ -70,20 +70,26 @@ function initGL(canvas)
     mat4.translate(projectionMatrix, projectionMatrix, [0, 0, -5]);
 }
 
+const faceColors = [
+    [1.0, 0.0, 0.0, 1.0],
+    [0.0, 1.0, 0.0, 1.0],
+    [0.0, 0.0, 1.0, 1.0],
+    [1.0, 1.0, 0.0, 1.0],
+    [1.0, 0.0, 1.0, 1.0],
+    [0.0, 1.0, 1.0, 1.0],
+    [0.5, 0.5, 0.1, 1.0],
+    [0.7, 0.3, 0.7, 1.0]
+];
+
 function createPyramid(gl, translation, rotationAxis) {
-    // Vertex Data
-    var vertexBuffer;
-    vertexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+    const top_v = [0.0, 1.0, 0.0]
+    const pent_v1 = [0.0, -0.5, -0.5]
+    const pent_v2 = [-0.5, -0.5, -0.2]
+    const pent_v3 = [-0.3, -0.5, 0.5]
+    const pent_v4 = [-0.3, -0.5, 0.5]
+    const pent_v5 = [0.5, -0.5, -0.2]
 
-    top_v = [0.0, 1.0, 0.0]
-    pent_v1 = [0.0, -.5, -.5]
-    pent_v2 = [-.5, -.5, -0.2]
-    pent_v3 = [-.3, -.5, 0.5]
-    pent_v4 = [-.3, -.5, 0.5]
-    pent_v5 = [0.5, -.5, -0.2]
-
-    var verts = [
+    let verts = [
        // Base
        ...pent_v1, ...pent_v2, ...pent_v3, ...pent_v4, ...pent_v5,
 
@@ -95,36 +101,9 @@ function createPyramid(gl, translation, rotationAxis) {
        ...pent_v5, ...pent_v1, ...top_v,
     ];
 
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);
+    const faceLengths = [5, 3, 3, 3, 3, 3];
 
-    // Color data
-    var colorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-    var faceColors = [
-        [1.0, 0.0, 0.0, 1.0], 
-        [0.0, 1.0, 0.0, 1.0], 
-        [0.0, 0.0, 1.0, 1.0],
-        [1.0, 1.0, 0.0, 1.0], 
-        [1.0, 0.0, 1.0, 1.0], 
-        [0.0, 1.0, 1.0, 1.0] 
-    ];
-
-    var vertexColors = [];
-    faceLengths = [5, 3, 3, 3, 3, 3]
-
-    for (var i in faceColors) {
-        var color = faceColors[i];
-        for (var j=0; j < faceLengths[i]; j++) {    
-            vertexColors = vertexColors.concat(color);
-        }
-    }
-
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexColors), gl.STATIC_DRAW);
-
-    // Index data (defines the triangles to be drawn).
-    var pyramidIndexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pyramidIndexBuffer);
-    var pyramidIndices = [
+    const pyramidIndices = [
         0, 1, 2,  0, 2, 3,  0, 3, 4,
         5, 6, 7,
         8, 9, 10,
@@ -132,14 +111,7 @@ function createPyramid(gl, translation, rotationAxis) {
         14, 15, 16,
         17, 18, 19
     ];
-
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(pyramidIndices), gl.STATIC_DRAW);
-    
-    var pyramid = {
-        buffer:vertexBuffer, colorBuffer:colorBuffer, indices:pyramidIndexBuffer,
-        vertSize:3, nVerts:20, colorSize:4, nColors: 20, nIndices:24,
-        primtype:gl.TRIANGLES, modelViewMatrix: mat4.create(), currentTime : Date.now()
-    };
+    let pyramid = makeFigure(gl, verts, faceLengths, pyramidIndices);
 
     mat4.translate(pyramid.modelViewMatrix, pyramid.modelViewMatrix, translation);
 
@@ -152,35 +124,30 @@ function createPyramid(gl, translation, rotationAxis) {
 
         mat4.rotate(this.modelViewMatrix, this.modelViewMatrix, angle, rotationAxis);
     };
-    
+
     return pyramid;
 }
 
 function createScutoid(gl, translation, rotationAxis) {
-    // Vertex Data
-    var vertexBuffer;
-    vertexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-
     // Top face vertex
-    var v1 = [-0.5, 1.5, 0.5];
-    var v2 = [-1,  1.5,  0.0];
-    var v3 = [-0.5,  1.5, -0.5];
-    var v4 = [0.5,  1.5, -0.5];
-    var v5 = [1,  1.5,  0.0];
-    var v6 = [0.5,  1.5,  0.5];
+    const v1 = [-0.5, 1.5, 0.5];
+    const v2 = [-1,  1.5,  0.0];
+    const v3 = [-0.5,  1.5, -0.5];
+    const v4 = [0.5,  1.5, -0.5];
+    const v5 = [1,  1.5,  0.0];
+    const v6 = [0.5,  1.5,  0.5];
 
     // Pentagon vertex
-    var pent_v1 = [0.0, -1.5,  0.5];
-    var pent_v2 = [-0.9, -1.5,  0.2];
-    var pent_v3 = [-0.7, -1.5, -0.5];
-    var pent_v4 = [0.7, -1.5, -0.0];
-    var pent_v5 = [0.9, -1.5,  0.2];
+    const pent_v1 = [0.0, -1.5,  0.5];
+    const pent_v2 = [-0.9, -1.5,  0.2];
+    const pent_v3 = [-0.7, -1.5, -0.5];
+    const pent_v4 = [0.7, -1.5, -0.0];
+    const pent_v5 = [0.9, -1.5,  0.2];
 
     // Triangle vertex
-    var tri_vertex = [0.0, 0.2, 1]
+    const tri_vertex = [0.0, 0.2, 1]
 
-    var verts = [
+    const verts = [
        // top face
        ...v1, ...v2, ...v3, ...v4, ...v5, ...v6,
 
@@ -198,41 +165,11 @@ function createScutoid(gl, translation, rotationAxis) {
 
        // triangle
        ...v6, ...v1, ...tri_vertex,
-       
     ];
 
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);
+    const faceLengths = [6, 5, 4, 4, 4, 5, 5, 3]
 
-    // Color data
-    var colorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-    var faceColors = [
-        [1.0, 0.0, 0.0, 1.0], 
-        [0.0, 1.0, 0.0, 1.0], 
-        [0.0, 0.0, 1.0, 1.0],
-        [1.0, 1.0, 0.0, 1.0], 
-        [1.0, 0.0, 1.0, 1.0], 
-        [0.0, 1.0, 1.0, 1.0],
-        [0.5, 0.5, 0.1, 1.0],
-        [0.7, 0.3, 0.7, 1.0]
-    ];
-
-    var vertexColors = [];
-    faceLengths = [6, 5, 4, 4, 4, 5, 5, 3]
-
-    for (var i in faceColors) {
-        var color = faceColors[i];
-        for (var j=0; j < faceLengths[i]; j++) {    
-            vertexColors = vertexColors.concat(color);
-        }
-    }
-
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexColors), gl.STATIC_DRAW);
-
-    // Index data (defines the triangles to be drawn).
-    var scutoidIndexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, scutoidIndexBuffer);
-    var scutoidIndices = [
+    const scutoidIndices = [
         0, 1, 3,      1, 2, 3,      0, 3, 4,      0, 4, 5,    
         6, 7, 8,      6, 8, 9,      6, 9, 10,
         11, 12, 13,   11, 13, 14,
@@ -243,13 +180,7 @@ function createScutoid(gl, translation, rotationAxis) {
         33, 34, 35,
     ];
 
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(scutoidIndices), gl.STATIC_DRAW);
-    
-    var scutoid = {
-        buffer:vertexBuffer, colorBuffer:colorBuffer, indices:scutoidIndexBuffer,
-        vertSize:3, nVerts:36, colorSize:4, nColors: 36, nIndices:60,
-        primtype:gl.TRIANGLES, modelViewMatrix: mat4.create(), currentTime : Date.now()
-    };
+    let scutoid = makeFigure(gl, verts, faceLengths, scutoidIndices);
 
     mat4.translate(scutoid.modelViewMatrix, scutoid.modelViewMatrix, translation);
 
@@ -259,72 +190,38 @@ function createScutoid(gl, translation, rotationAxis) {
         this.currentTime = now;
         var fract = deltat / duration;
         var angle = Math.PI * 2 * fract;
-    
+
         mat4.rotate(this.modelViewMatrix, this.modelViewMatrix, angle, rotationAxis);
     };
-    
+
     return scutoid;
 }
 
 function createOctahedron(gl, translation, rotationAxis) {
-    // Vertex Data
-    var vertexBuffer;
-    vertexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-
     // Square vertices
-    var v1 = [0, 0, 0];
-    var v2 = [0, 0.0, 1.5];
-    var v3 = [1.5, 0.0, 1.5];
-    var v4 = [1.5, 0, 0.0];
+    const v1 = [0, 0, 0];
+    const v2 = [0, 0.0, 1.5];
+    const v3 = [1.5, 0.0, 1.5];
+    const v4 = [1.5, 0, 0.0];
 
     // Other vertices
-    var v5 = [0.75, 1,  0.75];
-    var v6 = [0.75, -1,  0.75];
+    const v5 = [0.75, 1,  0.75];
+    const v6 = [0.75, -1,  0.75];
 
-
-    var verts = [
+    const verts = [
        ...v1, ...v2, ...v5,
        ...v1, ...v2, ...v6,
        ...v2, ...v3, ...v5,
        ...v2, ...v3, ...v6,
        ...v3, ...v4, ...v5,
-       ...v3, ...v4, ...v6, 
+       ...v3, ...v4, ...v6,
        ...v4, ...v1, ...v5,
        ...v4, ...v1, ...v6,
     ];
 
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);
+    var faceLengths = Array(8).fill(3);
 
-    // Color data
-    var colorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-    var faceColors = [
-        [1.0, 0.0, 0.0, 1.0], 
-        [0.0, 1.0, 0.0, 1.0], 
-        [0.0, 0.0, 1.0, 1.0],
-        [1.0, 1.0, 0.0, 1.0], 
-        [1.0, 0.0, 1.0, 1.0], 
-        [0.0, 1.0, 1.0, 1.0],
-        [0.5, 0.5, 0.1, 1.0],
-        [0.7, 0.3, 0.7, 1.0]
-    ];
-
-    var vertexColors = [];
-
-    for (var i in faceColors) {
-        var color = faceColors[i];
-        for (var j=0; j < 3; j++) {    
-            vertexColors = vertexColors.concat(color);
-        }
-    }
-
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexColors), gl.STATIC_DRAW);
-
-    // Index data (defines the triangles to be drawn).
-    var scutoidIndexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, scutoidIndexBuffer);
-    var scutoidIndices = [
+    var octahedronIndices = [
         0, 1, 2,
         3, 4, 5,
         6, 7, 8,
@@ -335,18 +232,12 @@ function createOctahedron(gl, translation, rotationAxis) {
         21, 22, 23
     ];
 
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(scutoidIndices), gl.STATIC_DRAW);
-    
-    var scutoid = {
-        buffer:vertexBuffer, colorBuffer:colorBuffer, indices:scutoidIndexBuffer,
-        vertSize:3, nVerts:24, colorSize:4, nColors: 24, nIndices:24,
-        primtype:gl.TRIANGLES, modelViewMatrix: mat4.create(), currentTime : Date.now()
-    };
+    let octahedron = makeFigure(gl, verts, faceLengths, octahedronIndices);
 
-    mat4.translate(scutoid.modelViewMatrix, scutoid.modelViewMatrix, translation);
+    mat4.translate(octahedron.modelViewMatrix, octahedron.modelViewMatrix, translation);
 
-    var goDown = false;
-    scutoid.update = function() {
+    let goDown = false;
+    octahedron.update = function() {
         var now = Date.now();
         var deltat = now - this.currentTime;
         this.currentTime = now;
@@ -356,26 +247,58 @@ function createOctahedron(gl, translation, rotationAxis) {
         mat4.rotate(this.modelViewMatrix, this.modelViewMatrix, angle, rotationAxis);
 
         // Move up or down
-        if(this.modelViewMatrix[13] > 3) {
+        if(this.modelViewMatrix[13] > 2) {
             goDown = true;
         }
-        if(this.modelViewMatrix[13] < -3) {
+        if(this.modelViewMatrix[13] < -2.5) {
             goDown = false;
         }
 
         if(goDown) {
-            mat4.translate(this.modelViewMatrix, this.modelViewMatrix, [0, -.05, 0]);
+            mat4.translate(this.modelViewMatrix, this.modelViewMatrix, [0, -0.05, 0]);
         } else {
-            mat4.translate(this.modelViewMatrix, this.modelViewMatrix, [0, .05, 0]);
+            mat4.translate(this.modelViewMatrix, this.modelViewMatrix, [0, 0.05, 0]);
         }
     };
     
-    return scutoid;
+    return octahedron;
+}
+
+function makeFigure(gl, verts, faceLengths, indices) {
+    // Vertex Data
+    let vertexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);
+
+    // Color data
+    let vertexColors = [];
+    for (let i in faceLengths) {
+        let color = faceColors[i];
+        for (let j=0; j < faceLengths[i]; j++) {    
+            vertexColors = vertexColors.concat(color);
+        }
+    }
+
+    var colorBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexColors), gl.STATIC_DRAW);
+
+    // Index data (defines the triangles to be drawn).
+    var indexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+
+    figure = {
+        buffer:vertexBuffer, colorBuffer:colorBuffer, indices:indexBuffer,
+        vertSize:3, nVerts:verts.length, colorSize:4, nColors: vertexColors.length, nIndices: indices.length,
+        primtype:gl.TRIANGLES, modelViewMatrix: mat4.create(), currentTime : Date.now()
+    };
+
+    return figure;
 }
 
 
-function createShader(gl, str, type)
-{
+function createShader(gl, str, type) {
     var shader;
     if (type == "fragment") {
         shader = gl.createShader(gl.FRAGMENT_SHADER);
@@ -396,8 +319,7 @@ function createShader(gl, str, type)
     return shader;
 }
 
-function initShader(gl)
-{
+function initShader(gl) {
     // load and compile the fragment and vertex shader
     var fragmentShader = createShader(gl, fragmentShaderSource, "fragment");
     var vertexShader = createShader(gl, vertexShaderSource, "vertex");
@@ -423,8 +345,7 @@ function initShader(gl)
     }
 }
 
-function draw(gl, objs) 
-{
+function draw(gl, objs) {
     // clear the background (with black)
     gl.clearColor(0.1, 0.1, 0.1, 1.0);
     gl.enable(gl.DEPTH_TEST);
@@ -443,7 +364,7 @@ function draw(gl, objs)
 
         gl.bindBuffer(gl.ARRAY_BUFFER, obj.colorBuffer);
         gl.vertexAttribPointer(shaderVertexColorAttribute, obj.colorSize, gl.FLOAT, false, 0, 0);
-        
+
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, obj.indices);
 
         gl.uniformMatrix4fv(shaderProjectionMatrixUniform, false, projectionMatrix);
@@ -454,8 +375,7 @@ function draw(gl, objs)
     }
 }
 
-function run(gl, objs) 
-{
+function run(gl, objs)  {
     // The window.requestAnimationFrame() method tells the browser that you wish to perform an animation and requests that the browser call a specified function to update an animation before the next repaint. The method takes a callback as an argument to be invoked before the repaint.
     requestAnimationFrame(function() { run(gl, objs); });
     draw(gl, objs);
@@ -463,4 +383,3 @@ function run(gl, objs)
     for(i = 0; i<objs.length; i++)
         objs[i].update();
 }
-

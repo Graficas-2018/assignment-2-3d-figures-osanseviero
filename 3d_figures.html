@@ -16,10 +16,9 @@
 			    var gl = initWebGL(canvas);
 		        initViewport(gl, canvas);
 		        initGL(canvas);
-				// TO DO: create and draw the figures
-				var pyramid = createPyramid(gl, [-5, 0, 0], [0.1, 1.0, 1]);
-				var scutoid = createScutoid(gl, [-2, 0, -5], [-0.4, 1.0, 0.1]);
-				var octahedron = createOctahedron(gl, [5, 0, -5], [0, 1.0, 0]);
+				var pyramid = createPyramid(gl, [-5, 0, 0], [0.1, 1.0, 0.2]);
+				var scutoid = createScutoid(gl, [-2, 0, -1], [-0.4, 1.0, 0.1]);
+				var octahedron = createOctahedron(gl, [5, 0, -3], [0, 1.0, 0]);
 				initShader(gl);
 				run(gl, [pyramid, scutoid, octahedron]);
 			}
